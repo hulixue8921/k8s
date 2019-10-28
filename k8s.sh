@@ -151,6 +151,7 @@ EOF
 :INPUT ACCEPT [0:0]
 -A INPUT -s $MasterIp/32 -p udp --dport 8285 -j ACCEPT
 -A INPUT -s $MasterIp/32 -p tcp --dport 10250 -j ACCEPT
+-A INPUT -s $MasterIp/32 -p tcp --dport 10255 -j ACCEPT
 -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 -A INPUT -p icmp -j ACCEPT
 -A INPUT -i lo -j ACCEPT
