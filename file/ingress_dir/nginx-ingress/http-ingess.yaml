@@ -1,0 +1,21 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: canary-tom
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.org/server-snippets: |
+      access_log  /var/log/nginx/test.ewang.com.access.log  main;
+    #nginx.org/rewrites: "serviceName=canary-tom rewrite=/test1/;serviceName=coffee-svc rewrite=/beans/"
+spec:
+  rules:
+    - host: dev.ewang.com
+      http:
+        paths:
+          - backend:
+              serviceName: canary-tom
+              servicePort: 80
+            path: /
+---

@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hulixue
+  labels:
+    app: hulixue
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hulixue
+  template:
+    metadata:
+      labels:
+        app: hulixue
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - hulixue
+            #topologyKey: "kubernetes.io/hostname"
+            topologyKey: "zone"
+      serviceAccountName: hulixue
+      containers:
+        - image: 172.23.1.144:5000/ewang:v1
+          imagePullPolicy: Never
+          resources:
+            limits:
+              cpu: 60m
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 100Mi
+          name: hulixue
+          env:
+            - name: hulixue
+              valueFrom:
+                configMapKeyRef:
+                  name: hulixueconfigmap
+                  key: hulixue 
+          volumeMounts:
+            - mountPath: /sys/fs/cgroup
+              name: cg
+            - mountPath: /etc/localtime
+              name: time
+            - mountPath: /mnt
+              name: test
+      volumes:
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: cg
+        - hostPath:
+            path: /etc/localtime
+          name: time
+        - name: test
+          persistentVolumeClaim:
+            claimName: hulixue
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hulixue
+  name: hulixue
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: hulixue

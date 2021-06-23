@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: nfs-pv1
+  labels:
+    type: nfs        #指定类型是NFS
+spec:
+  capacity:            
+    storage: 2Gi
+  accessModes:        
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle        
+  nfs:
+    server: 172.23.2.83
+    path: /data

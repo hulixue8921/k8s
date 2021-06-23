@@ -1,0 +1,17 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ingress-nginx-ingress
+  namespace: ingress-nginx
+data:
+  ssl-protocols: TLSv1 TLSv1.1 TLSv1.2 TLSv1.3
+  log-format: '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer"  "$http_user_agent" "$http_x_forwarded_for"   $remote_addr'
+  stream-snippets: |
+    upstream ssh {
+          server 10.254.152.155:9000;
+      }
+      server {
+          listen 9000 ;
+          proxy_pass ssh;
+          proxy_responses 1;
+      } 

@@ -1,0 +1,17 @@
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  name: hello
+spec:
+  schedule: "*/1 11 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            kubernetes.io/hostname: vpnb
+          containers:
+          - name: hello
+            image: hulixue:1
+            command: ["echo","hello k8s date"]
+          restartPolicy: OnFailure

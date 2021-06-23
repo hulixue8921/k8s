@@ -1,0 +1,54 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tom-deployment
+  labels:
+    app: tom
+    v: v1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tom
+  template:
+    metadata:
+      labels:
+        app: tom
+    spec:
+      containers:
+        - image: 172.23.1.144:5000/ewang:v1
+          imagePullPolicy: Never
+          name: tom
+          resources:
+            limits:
+              cpu: 30m
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 100Mi
+          env:
+            - name: hulixue
+              valueFrom:
+                configMapKeyRef:
+                  name: hulixueconfigmap
+                  key: hulixue 
+          volumeMounts:
+            - mountPath: /sys/fs/cgroup
+              name: hulixuev
+      volumes:
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: hulixuev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: tom
+  name: tom
+spec:
+  ports:
+    - port: 80
+  selector:
+    app: tom

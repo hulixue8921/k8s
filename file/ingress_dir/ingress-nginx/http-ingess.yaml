@@ -1,0 +1,34 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: canary-tom
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+   # nginx.ingress.kubernetes.io/rewrite-target: https://www.ewang.com
+   # nginx.ingress.kubernetes.io/auth-type: basic    
+   # nginx.ingress.kubernetes.io/auth-secret: basic-auth    
+   # nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - foo'
+    #nginx.ingress.kubernetes.io/auth-url: http://auth.ewang.com/auth
+    #nginx.ingress.kubernetes.io/auth-signin: http://auth.ewang.com/login
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+       set $agentflag 0;
+       if ($uri ~ /test1) {
+        set  $agentflag 1;
+       }
+       if ($agentflag = 1 ) {
+         return 301 http://test.ewang.com/test/index.html;
+       }
+       access_log /var/log/nginx/test.ewang.com.access.log;
+       error_log  /var/log/nginx/test.ewang.com.error.log;
+spec:
+  rules:
+    - host: test.ewang.com
+      http:
+        paths:
+          - backend:
+              serviceName: canary-tom
+              servicePort: 80
+            path: /
+---

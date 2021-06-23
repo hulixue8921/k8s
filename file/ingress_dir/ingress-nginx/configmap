@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-ingress-nginx-controller
+  namespace: ingress-nginx
+data:
+  access-log-path: /var/log/nginx/all.log
+  log-format-upstream: '{"time": "$time_iso8601","http_user_agent": "$http_user_agent"}'
+

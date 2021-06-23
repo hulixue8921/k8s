@@ -1,0 +1,26 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: old-tom
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/enable-access-log: "true"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+       access_log /var/log/nginx/test.example.com.access.log upstreaminfo if=$loggable;
+       error_log  /var/log/nginx/test.example.com.error.log;
+spec:
+  tls:
+    - hosts:
+        - qa.yiben.ewang.com
+      secretName: qaewang
+  rules:
+    - host: qa.yiben.ewang.com
+      http:
+        paths:
+        - path: /
+          backend:
+            serviceName: tom
+            servicePort: 80
+---

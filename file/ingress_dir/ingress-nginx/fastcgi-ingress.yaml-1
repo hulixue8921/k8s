@@ -1,0 +1,110 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-cm
+data:
+  SCRIPT_FILENAME:  /xiankan/www/public/index.php
+  REQUEST_URI: $request_url
+---
+
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/backend-protocol: "FCGI"
+    nginx.ingress.kubernetes.io/fastcgi-index: "index.php"
+    nginx.ingress.kubernetes.io/fastcgi-params-configmap: "example-cm"
+   # nginx.ingress.kubernetes.io/configuration-snippet: |
+    nginx.ingress.kubernetes.io/server-snippet: |
+      # root   /var/log/nginx/code/public;
+       index  index.php;
+       set $request_url $request_uri;
+       access_log /var/log/nginx/devewang.access.log;
+       error_log  /var/log/nginx/devewang.error.log;
+       set $request_url $request_uri;
+       if ($request_uri ~ ^/l/(.*).html(.*)$ ) {
+        set $request_url /live/play;
+       }
+       rewrite ^/l/(.*).html(.*)$ /index.php?id=$1 last;
+       if ($request_uri ~ ^/m/(.*).html(.*)$ ) {
+        set $request_url /movie/moviedetail;
+       }
+       rewrite ^/m/(.*)-(.*).html(.*)$  /movie/moviedetail?id=$1&type=$2 last;
+       rewrite ^/m/(.*).html(.*)$  /movie/moviedetail?id=$1 last;
+       if ($request_uri ~ ^/play/(.*).html(.*)$ ) {        
+         set $request_url /movie/playvideo;    
+       }     
+       rewrite ^/play/(.*)-(.*).html(.*)$  /movie/playvideo?id=$1&vid=$2 last;    
+       rewrite ^/play/(.*).html(.*)$  /movie/playvideo?id=$1 last;
+       if ($request_uri ~ ^/a/(.*).html(.*)$ ) {
+         set $request_url /actor/info;
+       }
+       rewrite ^/a/(.*).html(.*)$  /actor/info?id=$1 last;
+       if ($request_uri ~ ^/n/(.*).html(.*)$ ) {
+          set $request_url /news/info;
+       }
+       rewrite ^/n/(.*).html(.*)$  /news/info?id=$1 last;
+       if ($request_uri ~ ^/s/(.*).html(.*)$ ) {
+         set $request_url /movie/shortPlay;
+       }
+       rewrite ^/s/(.*).html(.*)$  /movie/shortPlay?id=$1 last;
+       if ($request_uri ~ ^/tv/(.*).html(.*)$ ) {
+          set $request_url /tv/play/;
+       }
+       rewrite ^/tv/(.*).html$ /index.php?id=$1 last;
+       if ($request_uri ~ ^/ep/(.*).html(.*)$ ) {
+          set $request_url /tv/play/;
+       }
+       rewrite ^/ep/(.*).html$ /index.php?epid=$1 last;
+       if ($request_uri ~ ^/404) {
+          set $request_url /index/notfound;
+       }
+       rewrite ^/404 /index.php? last;
+
+       if ($request_uri ~ ^/(movies|movies/)$) {
+        set $request_url /index/movies;
+       }
+       rewrite ^/(movies|movies/)$ /index.php? last;
+
+       if ($request_uri ~ ^/(trailer|trailer/)$) {
+          set $request_url /index/trailer;
+       }
+
+       if ($request_uri ~ ^/(modern|modern/)$) {
+         set $request_url /index/modern;
+       }
+       rewrite ^/(modern|modern/)$ /index.php? last;
+       if ($request_uri ~ ^/act/(.*).html(.*)$ ) {
+         set $request_url /activity/detail;
+       }
+       rewrite ^/act/(.*).html$ /index.php?id=$1 last;
+       rewrite ^/(trailer|trailer/)$ /index.php? last;
+       rewrite ^/min/([bfg]=.+) /min/index.php?$1 last;
+       if ($request_uri ~ ^/music2017.html.*$ ) {
+          set $request_url /music/index/index;
+       }    
+       if ($request_uri ~ ^/p/(.*)_p(.*).html$ ) {
+          set $request_url /poster/index;
+       }
+       rewrite ^/p/m(\d+)_p(\d+).html$   /poster/index?type=movie&id=$1&posterid=$2 last;
+       rewrite ^/p/a(\d+)_p(\d+).html$   /poster/index?type=actor&id=$1&posterid=$2 last;
+       try_files $uri  $uri/  /index.php$is_args$args;
+       location / {
+         fastcgi_pass   example-service.default:9000;
+         fastcgi_index  index.php;
+         include        fastcgi_params;
+         fastcgi_param  SCRIPT_FILENAME /xiankan/www/public/index.php;
+         fastcgi_param  REQUEST_URI $request_url;
+        }
+  name: example-app
+spec:
+  rules:
+  - host: dev.ewang.com
+    http:
+      paths:
+      - backend:
+          serviceName: example-service
+          servicePort: fastcgi
+---

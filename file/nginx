@@ -1,0 +1,33 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - image: 172.23.1.144:5000/perl:v1
+          imagePullPolicy: Never
+          name: nginx
+          volumeMounts:
+            - mountPath: /sys/fs/cgroup
+              name: hulixuev
+            - mountPath: /etc/secrets
+              name: echo
+      volumes:
+        - hostPath:
+            path: /sys/fs/cgroup
+          name: hulixuev
+        - name: echo
+          secret:
+            secretName: mysecret
